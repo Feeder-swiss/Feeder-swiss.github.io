@@ -18,7 +18,7 @@ jobs:
         python-version: '3.11'
     
     - name: Install dependencies
-      run: pip install feedparser
+    - run: pip install feedparser pytz
     
     - name: Run aggregator
       run: python3 aggregate_feed.py
