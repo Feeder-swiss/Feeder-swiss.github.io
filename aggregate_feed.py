@@ -2,7 +2,6 @@
 import feedparser
 from datetime import datetime
 from xml.etree.ElementTree import Element, SubElement, tostring
-import pytz
 
 SOURCES = {
     'Reuters EU': 'https://feeds.reuters.com/reuters/worldNews',
@@ -24,18 +23,12 @@ def fetch_and_aggregate():
                     'title': entry.get('title', 'Untitled'),
                     'link': entry.get('link', ''),
                     'description': entry.get('summary', '')[:500],
-                    'pubDate': entry.get('published', datetime.now(pytz.UTC).isoformat()),
+                    'pubDate': entry.get('published', datetime.utcnow().isoformat()),
                     'source': source_name,
                     'guid': entry.get('id', entry.get('link', source_name))
                 })
         except Exception as e:
             print(f"Error fetching {source_name}: {e}")
-            continue
-    
-    try:
-        all_items.sort(key=lambda x: x['pubDate'], reverse=True)
-    except:
-        pass
     
     rss = Element('rss', {
         'version': '2.0',
@@ -48,12 +41,7 @@ def fetch_and_aggregate():
     SubElement(channel, 'link').text = 'https://github.com'
     SubElement(channel, 'description').text = 'Curated news and analysis on EU governance, Swiss politics, and regional events'
     SubElement(channel, 'language').text = 'en-us'
-    SubElement(channel, 'lastBuildDate').text = datetime.now(pytz.UTC).strftime('%a, %d %b %Y %H:%M:%S +0000')
-    
-    atom_link = SubElement(channel, 'atom:link')
-    atom_link.set('href', 'https://github.com')
-    atom_link.set('rel', 'self')
-    atom_link.set('type', 'application/rss+xml')
+    SubElement(channel, 'lastBuildDate').text = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S +0000')
     
     for item in all_items[:50]:
         item_elem = SubElement(channel, 'item')
@@ -69,7 +57,7 @@ def fetch_and_aggregate():
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
         f.write(xml_str)
     
-    print(f"Feed generated with {len(all_items)} items")
+    print(f"✓ Feed generated with {len(all_items)} items")
 
 if __name__ == '__main__':
     fetch_and_aggregate()
