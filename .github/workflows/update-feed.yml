@@ -5,6 +5,9 @@ on:
     - cron: '0 */4 * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -18,15 +21,17 @@ jobs:
         python-version: '3.11'
     
     - name: Install dependencies
-      run: pip install feedparser pytz
+      run: pip install feedparser
     
     - name: Run aggregator
       run: python3 aggregate_feed.py
     
     - name: Commit and push
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config user.email "action@github.com"
+        git config user.name "GitHub Action"
         git add eu-swiss-feed.xml
-        git commit -m "Update RSS feed - $(date)" || echo "No changes"
+        git commit -m "Update RSS feed" || echo "No changes to commit"
         git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
